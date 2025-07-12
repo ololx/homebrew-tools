@@ -1,6 +1,6 @@
-cask "sbc-bitpool-expander" do
-  version "4.0.1"
-  sha256 "4d0aac183cdc00a4ad55adbdc491e11bf1ea1f9038afd8b031abb48702b8b513"
+cask "sbc-bitpool-expander@1.0.0" do
+  version "1.0.0"
+  sha256 "14906fdb287afb1f93b0fdf3579432081e7a3e9e9ad9638d2121c7bb559df14d"
 
   url "https://github.com/ololx/sbc-bitpool-expander/releases/download/v#{version}/sbc.bitpool.expander.app.zip",
       verified: "github.com/ololx/sbc-bitpool-expander/"
