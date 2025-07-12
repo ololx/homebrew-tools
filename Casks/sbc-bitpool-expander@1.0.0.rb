@@ -12,6 +12,12 @@ cask "sbc-bitpool-expander@1.0.0" do
 
   app "sbc bitpool expander.app"
 
+  postflight do
+    system_command "xattr",
+      args: ["-d", "com.apple.quarantine", "#{appdir}/sbc bitpool expander.app"],
+      sudo: false
+  end
+  
   zap trash: [
     "~/Library/Preferences/ololx.sbc-bitpool-expander.plist",
     "~/Library/Saved Application State/ololx.sbc-bitpool-expander.savedState",
