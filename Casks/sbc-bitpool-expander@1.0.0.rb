@@ -1,4 +1,4 @@
-cask "sbc-bitpool-expander" do
+cask "sbc-bitpool-expander@1.0.0" do
   version "1.0.0"
   sha256 "14906fdb287afb1f93b0fdf3579432081e7a3e9e9ad9638d2121c7bb559df14d"
 
