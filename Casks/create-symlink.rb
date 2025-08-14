@@ -5,33 +5,62 @@ cask "create-symlink" do
   url "https://github.com/ololx/create-symlink/releases/download/v#{version}/create.symlink.workflow.zip",
       verified: "github.com/ololx/create-symlink/"
   name "Create Symlink"
-  desc "Simple Automator Quick Action to create symbolic links via Finder"
+  desc "Automator Quick Action / Service to create symbolic links via Finder"
   homepage "https://github.com/ololx/create-symlink"
 
-  artifact "create symlink.workflow", target: "#{ENV["HOME"]}/Library/Services/create symlink.workflow"
-
-  postflight do
-    # Refresh Finder so Quick Actions list updates
-    system_command "/usr/bin/killall", args: ["Finder"], sudo: false
+  livecheck do
+    url :url
+    strategy :github_latest
   end
 
-  zap trash: [
-    "~/Library/Services/create symlink.workflow",
-  ]
+  preflight do
+    require "fileutils"
+    services_dir = File.expand_path("~/Library/Services")
+    FileUtils.mkdir_p(services_dir) unless Dir.exist?(services_dir)
+  end
+
+  artifact "create symlink.workflow",
+           target: "#{Dir.home}/Library/Services/create symlink.workflow"
+
+  postflight do
+    require "pathname"
+    workflow_target = Pathname.new(Dir.home).join("Library/Services/create symlink.workflow")
+
+    if workflow_target.exist?
+      system_command "/usr/bin/xattr",
+                     args: ["-dr", "com.apple.quarantine", workflow_target.to_s],
+                     sudo: false,
+                     must_succeed: false
+    end
+
+    system_command "/usr/bin/killall",
+                   args: ["Finder"],
+                   sudo: false,
+                   must_succeed: false
+  end
+
+  uninstall delete: "#{Dir.home}/Library/Services/create symlink.workflow"
+
+  uninstall_postflight do
+    system_command "/usr/bin/killall",
+                   args: ["Finder"],
+                   sudo: false,
+                   must_succeed: false
+  end
 
   caveats <<~EOS
-    The workflow was installed to:
+    Installed to:
       ~/Library/Services/create symlink.workflow
 
-    It should appear automatically as a Service (Quick Action) in Finder.
+    Where to find it in Finder:
+      • macOS 10.10–10.13 (Yosemite–High Sierra): Context menu → Services → create symlink
+      • macOS 10.14+ (Mojave and later): Context menu → Quick Actions → create symlink
 
-    If it does not:
-      1. Open System Settings → Privacy & Security → Extensions → Finder
-      2. Enable the "create symlink" Quick Action
-      3. Restart Finder with:
-           killall Finder
-
-    Then right-click a file or folder in Finder and choose:
-      Quick Actions → create symlink
+    If it doesn’t appear:
+      • Ventura/Sonoma (13+): System Settings → Privacy & Security → Extensions → Finder → enable “create symlink”
+      • Monterey or earlier (12 and below): System Preferences → Keyboard → Shortcuts → Services → enable “create symlink”
+        (on 10.14+ you can also check: System Preferences → Extensions → Finder)
+      • Then restart Finder:
+          killall Finder
   EOS
 end
