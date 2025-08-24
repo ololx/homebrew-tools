@@ -5,7 +5,7 @@ cask "sbc-bitpool-expander" do
   url "https://github.com/ololx/sbc-bitpool-expander/releases/download/v#{version}/sbc.bitpool.expander.app.zip",
       verified: "github.com/ololx/sbc-bitpool-expander/"
   name "SBC Bitpool Expander"
-  desc "macOS app to adjust Bluetooth SBC bitpool value"
+  desc "Simple app to adjust Bluetooth SBC bitpool value"
   homepage "https://github.com/ololx/sbc-bitpool-expander"
 
   livecheck do
@@ -15,10 +15,6 @@ cask "sbc-bitpool-expander" do
 
   depends_on macos: ">= :high_sierra"
 
-  conflicts_with cask: [
-    "sbc-bitpool-expander@1.0.0"
-  ]
-
   app "sbc bitpool expander.app"
 
   postflight do
@@ -27,40 +23,40 @@ cask "sbc-bitpool-expander" do
     app_path = Pathname.new("#{appdir}/sbc bitpool expander.app")
     if app_path.exist?
       system_command "/usr/bin/xattr",
-                     args: ["-dr", "com.apple.quarantine", app_path.to_s],
-                     sudo: false,
+                     args:         ["-dr", "com.apple.quarantine", app_path.to_s],
+                     sudo:         false,
                      must_succeed: false
     end
 
     system_command "/usr/bin/killall",
-                   args: ["-KILL", "bluetoothaudiod"],
-                   sudo: false,
+                   args:         ["-KILL", "bluetoothaudiod"],
+                   sudo:         false,
+                   must_succeed: false
+  end
+
+  uninstall_postflight do
+    system_command "/usr/bin/defaults",
+                   args:         ["delete", "com.apple.bluetoothaudiod"],
+                   sudo:         false,
+                   must_succeed: false
+
+    system_command "/usr/bin/killall",
+                   args:         ["-KILL", "cfprefsd"],
+                   sudo:         false,
+                   must_succeed: false
+
+    system_command "/usr/bin/killall",
+                   args:         ["-KILL", "bluetoothaudiod"],
+                   sudo:         false,
                    must_succeed: false
   end
 
   uninstall quit: "ololx.sbc-bitpool-expander"
 
-  uninstall_postflight do
-    system_command "/usr/bin/defaults",
-                   args: ["delete", "com.apple.bluetoothaudiod"],
-                   sudo: false,
-                   must_succeed: false
-
-    system_command "/usr/bin/killall",
-                   args: ["-KILL", "cfprefsd"],
-                   sudo: false,
-                   must_succeed: false
-
-    system_command "/usr/bin/killall",
-                   args: ["-KILL", "bluetoothaudiod"],
-                   sudo: false,
-                   must_succeed: false
-  end
-
   zap trash: [
+    "~/Library/Preferences/com.apple.bluetoothaudiod.plist",
     "~/Library/Preferences/ololx.sbc-bitpool-expander.plist",
     "~/Library/Saved Application State/ololx.sbc-bitpool-expander.savedState",
-    "~/Library/Preferences/com.apple.bluetoothaudiod.plist",
   ]
 
   caveats <<~EOS

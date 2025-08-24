@@ -13,14 +13,13 @@ cask "create-symlink" do
     strategy :github_latest
   end
 
-  preflight do
-    require "fileutils"
-    services_dir = File.expand_path("~/Library/Services")
-    FileUtils.mkdir_p(services_dir) unless Dir.exist?(services_dir)
-  end
-
   artifact "create symlink.workflow",
            target: "#{Dir.home}/Library/Services/create symlink.workflow"
+
+  preflight do
+    require "pathname"
+    FileUtils.mkdir_p(Pathname.new(Dir.home).join("Library/Services"))
+  end
 
   postflight do
     require "pathname"
@@ -28,25 +27,25 @@ cask "create-symlink" do
 
     if workflow_target.exist?
       system_command "/usr/bin/xattr",
-                     args: ["-dr", "com.apple.quarantine", workflow_target.to_s],
-                     sudo: false,
+                     args:         ["-dr", "com.apple.quarantine", workflow_target.to_s],
+                     sudo:         false,
                      must_succeed: false
     end
 
     system_command "/usr/bin/killall",
-                   args: ["Finder"],
-                   sudo: false,
+                   args:         ["Finder"],
+                   sudo:         false,
+                   must_succeed: false
+  end
+
+  uninstall_postflight do
+    system_command "/usr/bin/killall",
+                   args:         ["Finder"],
+                   sudo:         false,
                    must_succeed: false
   end
 
   uninstall delete: "#{Dir.home}/Library/Services/create symlink.workflow"
-
-  uninstall_postflight do
-    system_command "/usr/bin/killall",
-                   args: ["Finder"],
-                   sudo: false,
-                   must_succeed: false
-  end
 
   caveats <<~EOS
     Installed to:
